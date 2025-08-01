@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBS Status Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Loading Spinner -->
+    <div id="loading-screen" class="flex items-center justify-center h-screen">
+        <div class="text-xl font-semibold text-gray-700">Loading...</div>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="hidden">
+        <div class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                <h2 id="auth-title" class="text-2xl font-bold text-center text-gray-800">Login to Your Account</h2>
+                <form id="auth-form" class="space-y-6">
+                    <input id="auth-email" type="email" placeholder="Email Address" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input id="auth-password" type="password" placeholder="Password" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="auth-button" type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400">
+                        Login
+                    </button>
+                </form>
+                <div id="auth-error" class="text-sm text-center text-red-500"></div>
+                <p class="text-sm text-center text-gray-600">
+                    <span id="auth-prompt">Don't have an account?</span>
+                    <button id="auth-toggle" class="ml-1 font-semibold text-blue-600 hover:underline">Sign Up</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen" class="hidden p-4 md:p-8">
+        <header class="flex items-center justify-between pb-4 mb-8 border-b">
+            <h1 class="text-3xl font-bold text-gray-800">DBS Status Tracker</h1>
+            <div class="flex items-center">
+                <span id="user-email" class="mr-4 text-sm text-gray-600"></span>
+                <button id="logout-button" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <!-- Input Form -->
+            <div class="p-6 bg-white rounded-lg shadow-md lg:col-span-1">
+                <h2 class="mb-6 text-xl font-semibold text-gray-700">Check Employee Status</h2>
+                <form id="dbs-form" class="space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-600">Applicant Details</h3>
+                    <input type="text" name="certificateNumber" placeholder="DBS Certificate Number" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="surname" placeholder="Applicant's Surname" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="date" name="dob" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <h3 class="pt-2 text-sm font-semibold text-gray-600">Your (Employer) Details</h3>
+                    <input type="text" name="employeeForename" placeholder="Your Forename" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="employeeSurname" placeholder="Your Surname" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <button id="dbs-submit-button" type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400">
+                        Check Status
+                    </button>
+                </form>
+                <div id="dbs-error" class="mt-4 text-sm text-red-500"></div>
+            </div>
+
+            <!-- Results and History -->
+            <div class="lg:col-span-2">
+                <!-- Current Result -->
+                <div id="result-container" class="hidden p-6 mb-8 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-800">Check Result</h3>
+                    <p id="result-status" class="text-2xl font-bold"></p>
+                    <p id="result-message" class="text-sm text-gray-600"></p>
+                </div>
+
+                <!-- History Log -->
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="mb-4 text-xl font-semibold text-gray-700">Check History</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="py-2">Date</th>
+                                    <th class="py-2">Certificate #</th>
+                                    <th class="py-2">Surname</th>
+                                    <th class="py-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="4" class="py-4 text-center text-gray-500">No checks have been made yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOtW9WlEvIvfQ5e5_miQPgWdwRWJ_AoiA",
+            authDomain: "dbs-check-105f1.firebaseapp.com",
+            projectId: "dbs-check-105f1",
+            storageBucket: "dbs-check-105f1.appspot.com",
+            messagingSenderId: "178651185140",
+            appId: "1:178651185140:web:3bc74047a8e9fd096fc3a1",
+            measurementId: "G-0BJ5NL1T5Z"
+        };
+        const MAKE_WEBHOOK_URL = 'https://hook.eu2.make.com/9ei8ysxujfo0tg2ecequ86hn9u24f6ij';
+        const MAKE_API_KEY = 'peanutbutterandjelly';
+
+        // --- INITIALIZE APP ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // --- DOM ELEMENTS ---
+        const loadingScreen = document.getElementById('loading-screen');
+        const authScreen = document.getElementById('auth-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const userEmailEl = document.getElementById('user-email');
+        const logoutButton = document.getElementById('logout-button');
+        
+        const authForm = document.getElementById('auth-form');
+        const authEmailEl = document.getElementById('auth-email');
+        const authPasswordEl = document.getElementById('auth-password');
+        const authErrorEl = document.getElementById('auth-error');
+        const authButton = document.getElementById('auth-button');
+        const authToggle = document.getElementById('auth-toggle');
+        const authTitle = document.getElementById('auth-title');
+        const authPrompt = document.getElementById('auth-prompt');
+
+        const dbsForm = document.getElementById('dbs-form');
+        const dbsSubmitButton = document.getElementById('dbs-submit-button');
+        const dbsErrorEl = document.getElementById('dbs-error');
+
+        const resultContainer = document.getElementById('result-container');
+        const resultStatusEl = document.getElementById('result-status');
+        const resultMessageEl = document.getElementById('result-message');
+        const historyTableBody = document.getElementById('history-table-body');
+
+        let isLogin = true;
+        let history = [];
+
+        // --- AUTHENTICATION LOGIC ---
+        onAuthStateChanged(auth, (user) => {
+            loadingScreen.classList.add('hidden');
+            if (user) {
+                authScreen.classList.add('hidden');
+                dashboardScreen.classList.remove('hidden');
+                userEmailEl.textContent = user.email;
+            } else {
+                dashboardScreen.classList.add('hidden');
+                authScreen.classList.remove('hidden');
+            }
+        });
+
+        authToggle.addEventListener('click', () => {
+            isLogin = !isLogin;
+            authTitle.textContent = isLogin ? 'Login to Your Account' : 'Create a New Account';
+            authButton.textContent = isLogin ? 'Login' : 'Sign Up';
+            authPrompt.textContent = isLogin ? "Don't have an account?" : 'Already have an account?';
+            authToggle.textContent = isLogin ? 'Sign Up' : 'Login';
+            authErrorEl.textContent = '';
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authButton.disabled = true;
+            authErrorEl.textContent = '';
+            
+            const email = authEmailEl.value;
+            const password = authPasswordEl.value;
+
+            try {
+                if (isLogin) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                authErrorEl.textContent = error.message;
+            } finally {
+                authButton.disabled = false;
+            }
+        });
+
+        logoutButton.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // --- DBS CHECKER LOGIC ---
+        dbsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            dbsSubmitButton.disabled = true;
+            dbsSubmitButton.textContent = 'Checking...';
+            dbsErrorEl.textContent = '';
+            resultContainer.classList.add('hidden');
+
+            const formData = new FormData(dbsForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(MAKE_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-make-apikey': MAKE_API_KEY,
+                    },
+                    body: JSON.stringify({
+                        ...data,
+                        organisationName: "DBS Checker App",
+                        consent: true,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Service returned an error. Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Display result
+                const statusText = result.status ? result.status.replace(/_/g, ' ') : 'UNKNOWN';
+                resultStatusEl.textContent = statusText;
+                resultMessageEl.textContent = result.message || 'Status check complete.';
+                
+                resultContainer.classList.remove('hidden');
+                if (statusText === 'BLANK NO NEW INFO') {
+                    resultContainer.className = 'p-6 mb-8 rounded-lg shadow-md bg-green-100';
+                    resultStatusEl.className = 'text-2xl font-bold text-green-700';
+                } else {
+                    resultContainer.className = 'p-6 mb-8 rounded-lg shadow-md bg-yellow-100';
+                    resultStatusEl.className = 'text-2xl font-bold text-yellow-700';
+                }
+
+                // Add to history
+                const newHistoryEntry = { ...data, status: statusText, checkedAt: new Date() };
+                history.unshift(newHistoryEntry);
+                updateHistoryTable();
+
+            } catch (err) {
+                dbsErrorEl.textContent = 'Failed to connect to the status check service. Please try again.';
+                console.error(err);
+            } finally {
+                dbsSubmitButton.disabled = false;
+                dbsSubmitButton.textContent = 'Check Status';
+            }
+        });
+
+        function updateHistoryTable() {
+            if (history.length === 0) {
+                historyTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">No checks have been made yet.</td></tr>';
+                return;
+            }
+
+            historyTableBody.innerHTML = history.map(entry => `
+                <tr class="border-b last:border-none">
+                    <td class="py-2 text-sm text-gray-600">${entry.checkedAt.toLocaleString()}</td>
+                    <td class="py-2 text-sm text-gray-800">${entry.certificateNumber}</td>
+                    <td class="py-2 text-sm text-gray-800">${entry.surname}</td>
+                    <td class="py-2 text-sm font-semibold ${entry.status === 'BLANK NO NEW INFO' ? 'text-green-600' : 'text-yellow-600'}">
+                        ${entry.status}
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
