@@ -58,12 +58,13 @@
             <div class="p-6 bg-white rounded-lg shadow-md lg:col-span-1">
                 <h2 class="mb-6 text-xl font-semibold text-gray-700">Check Employee Status</h2>
                 <form id="dbs-form" class="space-y-4">
-                    <h3 class="text-sm font-semibold text-gray-600">Applicant Details</h3>
+                    <h3 class="text-sm font-semibold text-gray-600">Applicant Details (from Certificate)</h3>
                     <input type="text" name="certificateNumber" placeholder="DBS Certificate Number" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="text" name="surname" placeholder="Applicant's Surname" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="date" name="dob" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     
-                    <h3 class="pt-2 text-sm font-semibold text-gray-600">Your (Employer) Details</h3>
+                    <h3 class="pt-2 text-sm font-semibold text-gray-600">Employer Details</h3>
+                     <input type="text" name="organisationName" placeholder="Organisation Name (from Certificate)" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="text" name="employeeForename" placeholder="Your Forename" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="text" name="employeeSurname" placeholder="Your Surname" required class="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     
@@ -225,7 +226,6 @@
                     },
                     body: JSON.stringify({
                         ...data,
-                        organisationName: "DBS Checker App",
                         consent: true,
                     }),
                 });
